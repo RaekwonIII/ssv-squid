@@ -9,13 +9,14 @@ import {
 } from '@subsquid/evm-processor'
 import { events } from './abi/SSVNetwork'
 
-export const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA"
+export const CONTRACT_ADDRESS = (process.env.CONTRACT_ADDRESS || "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA").toLocaleLowerCase()
 const STARTING_BLOCK = parseInt(process.env.STARTING_BLOCK || "0")
+const GATEWAY = process.env.GATEWAY || 'https://v2.archive.subsquid.io/network/ethereum-holesky'
 
 export const processor = new EvmBatchProcessor()
     // Lookup archive by the network name in Subsquid registry
     // See https://docs.subsquid.io/evm-indexing/supported-networks/
-    .setGateway('https://v2.archive.subsquid.io/network/ethereum-mainnet')
+    .setGateway(GATEWAY)
     // Chain RPC endpoint is required for
     //  - indexing unfinalized blocks https://docs.subsquid.io/basics/unfinalized-blocks/
     //  - querying the contract state https://docs.subsquid.io/evm-indexing/query-state/
