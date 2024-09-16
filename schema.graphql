@@ -1,0 +1,359 @@
+type Cluster @entity {
+  id: ID! # concat owner + operatorIds ?
+  owner: Account! # address
+  operatorIds: [Int!]! # uint64[]
+  validatorCount: BigInt! # uint32
+  validators: [Validator!] @derivedFrom(field: "cluster")
+  networkFeeIndex: BigInt! # uint64
+  index: BigInt! # uint64
+  active: Boolean! # bool
+  balance: BigInt! # uint256
+  lastUpdateBlockNumber: BigInt! # uint256
+  lastUpdateBlockTimestamp: BigInt!
+  lastUpdateTransactionHash: Bytes!
+}
+
+type ValidatorOperator @entity {
+  id: ID! # This is required, even if useless
+  validator: Validator!
+  operator: Operator! 
+}
+
+type Validator @entity {
+  id: ID! #publicKey
+  owner: Account! # address
+  operators: [ValidatorOperator!]! @derivedFrom(field: "validator") # uint64[]
+  cluster: Cluster!
+  active: Boolean! # bool
+  # publicKey: Bytes! # bytes
+  shares: Bytes! # bytes
+  lastUpdateBlockNumber: BigInt! # uint256
+  lastUpdateBlockTimestamp: BigInt!
+  lastUpdateTransactionHash: Bytes!
+}
+
+type Operator @entity {
+  id: ID! # uint256
+  operatorId: BigInt!
+  owner: Account! # address
+  publicKey: Bytes! # bytes
+  active: Boolean! # bool
+  fee: BigInt! # uint256
+  previousFee: BigInt! # uint256
+  whitelisted: [AccountOperator!]! @derivedFrom(field: "operator")
+  whitelistedContract: Bytes! #address
+  isPrivate: Boolean! # bool
+  totalWithdrawn: BigInt! # uint256
+  lastUpdateBlockNumber: BigInt! # uint256
+  lastUpdateBlockTimestamp: BigInt!
+  lastUpdateTransactionHash: Bytes!
+  validatorCount: BigInt! # uint256
+  validators: [ValidatorOperator!]! @derivedFrom(field: "operator") # [Validator!] @derivedFrom(field: "operators")
+}
+
+type AccountOperator @entity {
+  id: ID! # This is required, even if useless
+  account: Account!
+  operator: Operator! 
+}
+
+type Account @entity {
+  id: ID! # address
+  nonce: BigInt!
+  validatorCount: BigInt! # uint256
+  clusters: [Cluster!] @derivedFrom(field: "owner")
+  validators: [Validator!] @derivedFrom(field: "owner")
+  operators: [Operator!] @derivedFrom(field: "owner")
+}
+
+type DAOValues @entity {
+  id: ID!
+  networkFee: BigInt! # uint256
+  liquidationThreshold: BigInt! # uint256
+  minimumLiquidationCollateral: BigInt! # uint256
+  operatorFeeIncreaseLimit: BigInt! # uint256
+  declareOperatorFeePeriod: BigInt! # uint256
+  executeOperatorFeePeriod: BigInt! # uint256
+  operatorMaximumFee: BigInt! # uint256
+  updateType: DAOUpdateTypes!
+  lastUpdateBlockNumber: BigInt! # uint256
+  lastUpdateBlockTimestamp: BigInt! # uint256
+  lastUpdateTransactionHash: Bytes! # uint256
+}
+
+enum DAOUpdateTypes {
+  NETWORK_FEE,
+  LIQUIDATION_THRESHOLD,
+  MIN_LIQUIDATION_COLLATERAL,
+  OPERATOR_FEE_INCREASE_LIMIT,
+  DECLARE_OPERATOR_FEE_PERIOD,
+  EXECUTE_OPERATOR_FEE_PERIOD,
+  OPERATOR_MAX_FEE,
+}
+
+type ClusterDeposited @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  value: BigInt! # uint256
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ClusterLiquidated @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ClusterReactivated @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ClusterWithdrawn @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  value: BigInt! # uint256
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DeclareOperatorFeePeriodUpdated @entity {
+  id: ID!
+  value: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ExecuteOperatorFeePeriodUpdated @entity {
+  id: ID!
+  value: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FeeRecipientAddressUpdated @entity {
+  id: ID!
+  owner: Bytes! # address
+  recipientAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type LiquidationThresholdPeriodUpdated @entity {
+  id: ID!
+  value: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type MinimumLiquidationCollateralUpdated @entity {
+  id: ID!
+  value: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type NetworkEarningsWithdrawn @entity {
+  id: ID!
+  value: BigInt! # uint256
+  recipient: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type NetworkFeeUpdated @entity {
+  id: ID!
+  oldFee: BigInt! # uint256
+  newFee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorAdded @entity {
+  id: ID!
+  operatorId: BigInt! # uint64
+  owner: Bytes! # address
+  publicKey: Bytes! # bytes
+  fee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorFeeDeclarationCancelled @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorId: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorFeeDeclared @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorId: BigInt! # uint64
+  blockNumber: BigInt! # uint256
+  fee: BigInt! # uint256
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorFeeExecuted @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorId: BigInt! # uint64
+  blockNumber: BigInt! # uint256
+  fee: BigInt! # uint256
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorFeeIncreaseLimitUpdated @entity {
+  id: ID!
+  value: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorMaximumFeeUpdated @entity {
+  id: ID!
+  maxFee: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorRemoved @entity {
+  id: ID!
+  operatorId: BigInt! # uint64
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorWhitelistUpdated @entity {
+  id: ID!
+  operatorId: BigInt! # uint64
+  whitelisted: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorMultipleWhitelistUpdated @entity {
+  id: ID!
+  operatorIds: [Int!]! # uint64[]
+  whitelistAddresses: [Bytes!] # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorMultipleWhitelistRemoved @entity {
+  id: ID!
+  operatorIds: [Int!]! # uint64[]
+  whitelistAddresses: [Bytes!] # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorWhitelistingContractUpdated @entity {
+  id: ID!
+  operatorIds: [Int!]! # uint64[]
+  whitelistingContract: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorPrivacyStatusUpdated @entity {
+  id: ID!
+  operatorIds: [Int!]! # uint64[]
+  toPrivate: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OperatorWithdrawn @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorId: BigInt! # uint64
+  value: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ValidatorAdded @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  publicKey: Bytes! # bytes
+  shares: Bytes! # bytes
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ValidatorRemoved @entity {
+  id: ID!
+  owner: Bytes! # address
+  operatorIds: [Int!]! # uint64[]
+  publicKey: Bytes! # bytes
+  clusterValidatorCount: BigInt! # uint32
+  clusterNetworkFeeIndex: BigInt! # uint64
+  clusterIndex: BigInt! # uint64
+  clusterActive: Boolean! # bool
+  clusterBalance: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
