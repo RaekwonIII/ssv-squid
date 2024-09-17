@@ -6,7 +6,7 @@ import { Log } from "./processor"
 export function handleValidatorAdded(event: Log, eventData: ValidatorAddedEventArgs): ValidatorAdded {
     let entity = new ValidatorAdded(
         {
-            id: `${event.transaction?.hash}-${event.logIndex}`, //concatI32(event.logIndex.toI32()),
+            id: `${event.transactionHash}-${event.logIndex}`, //concatI32(event.logIndex.toI32()),
             blockNumber: BigInt(event.block.height),
             blockTimestamp: BigInt(event.block.timestamp),
             transactionHash: decodeHex(event.block.hash),

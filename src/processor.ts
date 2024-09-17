@@ -35,6 +35,11 @@ export const processor = new EvmBatchProcessor()
         address: [CONTRACT_ADDRESS],
         topic0: [events.ValidatorAdded.topic]
     })
+    .setFields({
+        log: {
+            transactionHash: true
+        }
+    })
 
 export type Fields = EvmBatchProcessorFields<typeof processor>
 export type Block = BlockHeader<Fields>
