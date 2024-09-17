@@ -1,16 +1,24 @@
 import {TypeormDatabase} from '@subsquid/typeorm-store'
-// import {Burn} from './model'
-import {CONTRACT_ADDRESS, processor} from './processor'
-import { events } from './abi/SSVNetwork'
+import {CONTRACT_ADDRESS, Log, processor} from './processor'
+import { events, ValidatorAddedEventArgs } from './abi/SSVNetwork'
+import { handleValidatorAdded } from './handlers'
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
-
+    let validatorAddedObjs = new Map()
     for (let block of ctx.blocks) {
         for (let log of block.logs) {
-            if (log.address === CONTRACT_ADDRESS && log.topics[0] === events.ValidatorAdded.topic) {
-                let { owner, operatorIds, publicKey, shares, cluster } = events.ValidatorAdded.decode(log)
-                ctx.log.info(`Parsed validator ${publicKey} owned by ${owner} being registered to cluster with operators: ${operatorIds}`)
-            }
+            let eventData = getLogData(log)
+            ctx.log.info(`Parsed validator ${eventData.publicKey} owned by ${eventData.owner} being registered to cluster with operators: ${eventData.operatorIds}`)
+            let validatorAddedObj = handleValidatorAdded(log, eventData)
+            validatorAddedObjs.set(validatorAddedObj.id, validatorAddedObj)
         }
     }
+    await ctx.store.upsert([...validatorAddedObjs.values()]);
 })
+
+function getLogData(log: Log): ValidatorAddedEventArgs {
+    if (log.address === CONTRACT_ADDRESS && log.topics[0] === events.ValidatorAdded.topic) {
+        return events.ValidatorAdded.decode(log)
+    }
+    throw new Error('Unsupported topic')
+}
